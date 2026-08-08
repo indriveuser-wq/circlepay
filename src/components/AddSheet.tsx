@@ -327,9 +327,9 @@ function ExpenseForm({
                     e.target.checked ? [...base, id] : base.filter((x) => x !== id),
                   );
                 }}
-                className="h-4.5 w-4.5 rounded border-input"
+                className="h-4.5 w-4.5 shrink-0 rounded border-input"
               />
-              <PersonAvatar profile={profiles.get(id)} size="sm" />
+              <PersonAvatar profile={profiles.get(id)} size="sm" className="shrink-0" />
               <span className="min-w-0 flex-1 truncate text-sm font-medium">
                 {id === me ? "You" : displayName(profiles.get(id))}
               </span>
@@ -339,12 +339,13 @@ function ExpenseForm({
                   value={weights[id] ?? ""}
                   onChange={(e) => setWeights({ ...weights, [id]: e.target.value })}
                   placeholder={splitMethod === "percent" ? "%" : splitMethod === "shares" ? "1" : "0"}
-                  className="h-9 w-20 text-right"
+                  className="h-9 w-14 shrink-0 text-right sm:w-20"
                 />
               ) : null}
-              <span className="num w-24 text-right text-sm text-muted-foreground">
+              <span className="num w-20 shrink-0 text-right text-xs text-muted-foreground sm:w-24 sm:text-sm">
                 {included ? formatMinor(share, activeCircle?.currency) : "—"}
               </span>
+
             </li>
           );
         })}
