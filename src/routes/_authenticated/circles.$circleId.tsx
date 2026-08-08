@@ -53,13 +53,18 @@ function CircleDetail() {
     .filter((e) => !e.deleted_at)
     .sort((a, b) => b.spent_on.localeCompare(a.spent_on));
   const participants = useParticipants();
-  const { graph, balances } = useLedger(me, circleId);
+  const { graph } = useLedger(me, circleId);
   const [addOpen, setAddOpen] = useState(false);
   const [memberOpen, setMemberOpen] = useState(false);
+  const [openExpense, setOpenExpense] = useState<string | null>(null);
 
-  // Suggestions are derived only from my own net balances — debts between two
-  // other members never enter this computation.
-  const suggestions = useMemo(() => mySettlementEdges(graph, me), [graph, me]);
+  // Aggregated net position per member — derived from every expense share,
+  // repayment and confirmed settlement in this circle. Expenses are untouched.
+  const netBalances = useMemo(() => memberNetBalances(graph), [graph]);
+
+  // Minimised settlement plan, narrowed to transactions that involve me:
+  // debts between two other members never enter what I can see.
+  const suggestions = useMemo(() => settlementPlanFor(graph, me), [graph, me]);
 
   if (!circle) {
     return (
