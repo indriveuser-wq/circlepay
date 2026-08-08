@@ -17,6 +17,7 @@ import { Route as AuthenticatedCirclesIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedCirclesCircleIdRouteImport } from './routes/_authenticated/circles.$circleId'
 import { Route as AuthenticatedPeopleIndexRouteImport } from './routes/_authenticated/people.index'
 import { Route as AuthenticatedPeoplePersonIdRouteImport } from './routes/_authenticated/people.$personId'
+import { Route as AuthenticatedSettlePersonIdRouteImport } from './routes/_authenticated/settle.$personId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -61,6 +62,12 @@ const AuthenticatedPeoplePersonIdRoute =
     path: '/people/$personId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSettlePersonIdRoute =
+  AuthenticatedSettlePersonIdRouteImport.update({
+    id: '/settle/$personId',
+    path: '/settle/$personId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -68,6 +75,7 @@ export interface FileRoutesByFullPath {
   '/home': typeof AuthenticatedHomeRoute
   '/circles/$circleId': typeof AuthenticatedCirclesCircleIdRoute
   '/people/$personId': typeof AuthenticatedPeoplePersonIdRoute
+  '/settle/$personId': typeof AuthenticatedSettlePersonIdRoute
   '/circles/': typeof AuthenticatedCirclesIndexRoute
   '/people/': typeof AuthenticatedPeopleIndexRoute
 }
@@ -77,6 +85,7 @@ export interface FileRoutesByTo {
   '/home': typeof AuthenticatedHomeRoute
   '/circles/$circleId': typeof AuthenticatedCirclesCircleIdRoute
   '/people/$personId': typeof AuthenticatedPeoplePersonIdRoute
+  '/settle/$personId': typeof AuthenticatedSettlePersonIdRoute
   '/circles': typeof AuthenticatedCirclesIndexRoute
   '/people': typeof AuthenticatedPeopleIndexRoute
 }
@@ -88,6 +97,7 @@ export interface FileRoutesById {
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/circles/$circleId': typeof AuthenticatedCirclesCircleIdRoute
   '/_authenticated/people/$personId': typeof AuthenticatedPeoplePersonIdRoute
+  '/_authenticated/settle/$personId': typeof AuthenticatedSettlePersonIdRoute
   '/_authenticated/circles/': typeof AuthenticatedCirclesIndexRoute
   '/_authenticated/people/': typeof AuthenticatedPeopleIndexRoute
 }
@@ -99,6 +109,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/circles/$circleId'
     | '/people/$personId'
+    | '/settle/$personId'
     | '/circles/'
     | '/people/'
   fileRoutesByTo: FileRoutesByTo
@@ -108,6 +119,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/circles/$circleId'
     | '/people/$personId'
+    | '/settle/$personId'
     | '/circles'
     | '/people'
   id:
@@ -118,6 +130,7 @@ export interface FileRouteTypes {
     | '/_authenticated/home'
     | '/_authenticated/circles/$circleId'
     | '/_authenticated/people/$personId'
+    | '/_authenticated/settle/$personId'
     | '/_authenticated/circles/'
     | '/_authenticated/people/'
   fileRoutesById: FileRoutesById
@@ -186,6 +199,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPeoplePersonIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settle/$personId': {
+      id: '/_authenticated/settle/$personId'
+      path: '/settle/$personId'
+      fullPath: '/settle/$personId'
+      preLoaderRoute: typeof AuthenticatedSettlePersonIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -193,6 +213,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedCirclesCircleIdRoute: typeof AuthenticatedCirclesCircleIdRoute
   AuthenticatedPeoplePersonIdRoute: typeof AuthenticatedPeoplePersonIdRoute
+  AuthenticatedSettlePersonIdRoute: typeof AuthenticatedSettlePersonIdRoute
   AuthenticatedCirclesIndexRoute: typeof AuthenticatedCirclesIndexRoute
   AuthenticatedPeopleIndexRoute: typeof AuthenticatedPeopleIndexRoute
 }
@@ -201,6 +222,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedCirclesCircleIdRoute: AuthenticatedCirclesCircleIdRoute,
   AuthenticatedPeoplePersonIdRoute: AuthenticatedPeoplePersonIdRoute,
+  AuthenticatedSettlePersonIdRoute: AuthenticatedSettlePersonIdRoute,
   AuthenticatedCirclesIndexRoute: AuthenticatedCirclesIndexRoute,
   AuthenticatedPeopleIndexRoute: AuthenticatedPeopleIndexRoute,
 }
