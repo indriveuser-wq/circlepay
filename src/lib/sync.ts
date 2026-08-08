@@ -86,6 +86,7 @@ const PULL_TABLES = [
   "settlements",
   "notifications",
   "activity_events",
+  "friends",
 ] as const;
 
 async function pushOutbox(): Promise<void> {
