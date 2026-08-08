@@ -41,6 +41,10 @@ function ProfilePage() {
   const navigate = useNavigate();
 
   const [name, setName] = useState(profile?.name ?? "");
+  const [username, setUsername] = useState(profile?.username ?? "");
+  const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [savingProfile, setSavingProfile] = useState(false);
+
   const [provider, setProvider] = useState("eSewa");
   const [account, setAccount] = useState("");
   const [busy, setBusy] = useState(false);
