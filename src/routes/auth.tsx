@@ -44,12 +44,13 @@ function AuthPage() {
   const { next } = useSearch({ from: "/auth" });
   const target = safePath(next);
 
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
 
   useEffect(() => {
     if (!loading && session) void navigate({ to: target, replace: true });
@@ -59,7 +60,14 @@ function AuthPage() {
     event.preventDefault();
     setBusy(true);
     try {
-      if (mode === "signup") {
+      if (mode === "reset") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        setResetSent(true);
+        toast.success("Reset link sent", { description: "Check your inbox for the link." });
+      } else if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -80,6 +88,7 @@ function AuthPage() {
       setBusy(false);
     }
   }
+
 
   async function google() {
     const result = await lovable.auth.signInWithOAuth("google", {
