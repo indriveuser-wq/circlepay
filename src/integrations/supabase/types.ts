@@ -525,6 +525,15 @@ export type Database = {
         Args: { _expense: string; _user: string }
         Returns: boolean
       }
+      find_profile_by_username: {
+        Args: { _username: string }
+        Returns: {
+          avatar_url: string
+          id: string
+          name: string
+          username: string
+        }[]
+      }
       is_circle_member: {
         Args: { _circle: string; _user: string }
         Returns: boolean
@@ -539,6 +548,10 @@ export type Database = {
       }
       owns_expense: {
         Args: { _expense: string; _user: string }
+        Returns: boolean
+      }
+      shares_context: {
+        Args: { _me: string; _other: string }
         Returns: boolean
       }
     }

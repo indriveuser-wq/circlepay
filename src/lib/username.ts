@@ -25,7 +25,6 @@ type Row = {
   name: string | null;
   username: string | null;
   avatar_url: string | null;
-  currency: string | null;
 };
 
 function toProfile(row: Row): Profile {
@@ -37,7 +36,7 @@ function toProfile(row: Row): Profile {
     bio: null,
     email: null,
     phone: null,
-    currency: row.currency ?? "NPR",
+    currency: "NPR",
     timezone: "Asia/Kathmandu",
     notify_in_app: true,
     notify_push: false,
@@ -48,7 +47,8 @@ function toProfile(row: Row): Profile {
 
 /**
  * Exact-match username lookup. Checks the local cache first so it keeps
- * working offline, then falls back to the server.
+ * working offline, then falls back to a server-side lookup that only
+ * returns public profile fields (never email or phone).
  */
 export async function findProfileByUsername(raw: string): Promise<Profile | null> {
   const value = normalizeUsername(raw);
@@ -59,17 +59,15 @@ export async function findProfileByUsername(raw: string): Promise<Profile | null
 
   if (!isOnline()) return null;
 
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("id, name, username, avatar_url, currency")
-    .ilike("username", value)
-    .maybeSingle();
-  if (error || !data) return null;
+  const { data, error } = await supabase.rpc("find_profile_by_username", { _username: value });
+  const row = Array.isArray(data) ? data[0] : data;
+  if (error || !row) return null;
 
-  const profile = toProfile(data as Row);
+  const profile = toProfile(row as Row);
   await db.profiles.put(profile);
   return profile;
 }
+
 
 /** True when nobody else holds this username. */
 export async function isUsernameAvailable(raw: string, selfId: string): Promise<boolean> {
