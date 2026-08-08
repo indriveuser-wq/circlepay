@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { PersonAvatar } from "./PersonAvatar";
 import { useAuth } from "@/lib/auth";
 import {
@@ -61,8 +62,8 @@ export function AddSheet({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92dvh] max-w-lg overflow-y-auto rounded-t-3xl p-0 sm:rounded-3xl">
-        <div className="sticky top-0 z-10 border-b border-border bg-card px-5 pb-3 pt-5">
+      <DialogContent className="max-h-[92dvh] w-[calc(100%-1.5rem)] max-w-lg overflow-y-auto rounded-3xl p-0 sm:rounded-3xl">
+        <div className="sticky top-0 z-10 border-b border-border bg-card px-4 pb-3 pt-5 sm:px-5">
           <DialogHeader className="space-y-1 text-left">
             <DialogTitle className="font-display text-xl">Add a record</DialogTitle>
             <DialogDescription className="text-xs">
@@ -94,7 +95,7 @@ export function AddSheet({
           </div>
         </div>
 
-        <div className="px-5 pb-6 pt-4">
+        <div className="px-4 pb-6 pt-4 sm:px-5">
           {mode === "expense" ? (
             <ExpenseForm
               defaultCircleId={defaultCircleId}
@@ -211,22 +212,36 @@ function ExpenseForm({
 
   return (
     <div className="space-y-4">
-      <Field label="Circle">
-        <select
-          className="tap w-full rounded-xl border border-input bg-card px-3 text-sm"
-          value={activeCircle?.id ?? ""}
-          onChange={(e) => setCircleId(e.target.value)}
-        >
-          {circles.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.emoji} {c.name}
-            </option>
-          ))}
-        </select>
+      <Field label={`Amount (${activeCircle?.currency ?? "NPR"})`}>
+        <div className="flex items-center gap-2 rounded-2xl border border-input bg-card px-4 py-3">
+          <span className="shrink-0 text-lg font-semibold text-muted-foreground">
+            {activeCircle?.currency ?? "NPR"}
+          </span>
+          <Input
+            inputMode="decimal"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="5000"
+            className="num h-12 min-w-0 flex-1 border-0 bg-transparent p-0 text-right text-3xl font-bold shadow-none focus-visible:ring-0 sm:text-4xl"
+          />
+        </div>
       </Field>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Title" className="col-span-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Field label="Circle" className="sm:col-span-2">
+          <select
+            className="tap w-full rounded-xl border border-input bg-card px-3 text-sm"
+            value={activeCircle?.id ?? ""}
+            onChange={(e) => setCircleId(e.target.value)}
+          >
+            {circles.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.emoji} {c.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Title">
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -234,18 +249,11 @@ function ExpenseForm({
             maxLength={80}
           />
         </Field>
-        <Field label={`Amount (${activeCircle?.currency ?? "NPR"})`}>
-          <Input
-            inputMode="decimal"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="5000"
-          />
-        </Field>
         <Field label="Date">
           <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </Field>
       </div>
+
 
       <Field label="Category">
         <div className="flex flex-wrap gap-1.5">
@@ -320,9 +328,9 @@ function ExpenseForm({
                     e.target.checked ? [...base, id] : base.filter((x) => x !== id),
                   );
                 }}
-                className="h-4.5 w-4.5 rounded border-input"
+                className="h-4.5 w-4.5 shrink-0 rounded border-input"
               />
-              <PersonAvatar profile={profiles.get(id)} size="sm" />
+              <PersonAvatar profile={profiles.get(id)} size="sm" className="shrink-0" />
               <span className="min-w-0 flex-1 truncate text-sm font-medium">
                 {id === me ? "You" : displayName(profiles.get(id))}
               </span>
@@ -332,12 +340,13 @@ function ExpenseForm({
                   value={weights[id] ?? ""}
                   onChange={(e) => setWeights({ ...weights, [id]: e.target.value })}
                   placeholder={splitMethod === "percent" ? "%" : splitMethod === "shares" ? "1" : "0"}
-                  className="h-9 w-20 text-right"
+                  className="h-9 w-14 shrink-0 text-right sm:w-20"
                 />
               ) : null}
-              <span className="num w-24 text-right text-sm text-muted-foreground">
+              <span className="num w-20 shrink-0 text-right text-xs text-muted-foreground sm:w-24 sm:text-sm">
                 {included ? formatMinor(share, activeCircle?.currency) : "—"}
               </span>
+
             </li>
           );
         })}
@@ -385,7 +394,9 @@ function LoanForm({ direction, onDone }: { direction: "lend" | "borrow"; onDone:
   const [personId, setPersonId] = useState("");
   const [amount, setAmount] = useState("");
   const [purpose, setPurpose] = useState("");
-  const [dueOn, setDueOn] = useState("");
+  const [dueOn, setDueOn] = useState(today());
+  const [hasDue, setHasDue] = useState(false);
+
   const [busy, setBusy] = useState(false);
 
   const results = profiles
@@ -415,7 +426,7 @@ function LoanForm({ direction, onDone }: { direction: "lend" | "borrow"; onDone:
         amountMinor,
         currency: "NPR",
         ...(purpose.trim() ? { purpose: purpose.trim() } : {}),
-        dueOn: dueOn || null,
+        dueOn: hasDue && dueOn ? dueOn : null,
       });
       toast.success(direction === "lend" ? "Loan recorded" : "Borrowing recorded");
       onDone();
@@ -428,6 +439,19 @@ function LoanForm({ direction, onDone }: { direction: "lend" | "borrow"; onDone:
 
   return (
     <div className="space-y-4">
+      <Field label="Amount (NPR)">
+        <div className="flex items-center gap-2 rounded-2xl border border-input bg-card px-4 py-3">
+          <span className="shrink-0 text-lg font-semibold text-muted-foreground">Rs</span>
+          <Input
+            inputMode="decimal"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="5000"
+            className="num h-12 min-w-0 flex-1 border-0 bg-transparent p-0 text-right text-3xl font-bold shadow-none focus-visible:ring-0 sm:text-4xl"
+          />
+        </div>
+      </Field>
+
       <Field label={direction === "lend" ? "Lent to" : "Borrowed from"}>
         <Input
           value={query}
@@ -446,7 +470,7 @@ function LoanForm({ direction, onDone }: { direction: "lend" | "borrow"; onDone:
                 personId === p.id ? "border-primary bg-secondary" : "border-border bg-card",
               )}
             >
-              <PersonAvatar profile={p} size="sm" />
+              <PersonAvatar profile={p} size="sm" className="shrink-0" />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-semibold">{p.name}</span>
                 <span className="block truncate text-xs text-muted-foreground">
@@ -463,19 +487,25 @@ function LoanForm({ direction, onDone }: { direction: "lend" | "borrow"; onDone:
         ) : null}
       </ul>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Amount (NPR)">
-          <Input
-            inputMode="decimal"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="5000"
+      <div className="space-y-3 rounded-2xl border border-border bg-card p-3">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+          <Label htmlFor="due-toggle" className="min-w-0 text-sm font-semibold">
+            Set a due date
+          </Label>
+          <Switch
+            id="due-toggle"
+            checked={hasDue}
+            onCheckedChange={setHasDue}
+            className="shrink-0"
           />
-        </Field>
-        <Field label="Due date (optional)">
+        </div>
+        {hasDue ? (
           <Input type="date" value={dueOn} onChange={(e) => setDueOn(e.target.value)} />
-        </Field>
+        ) : (
+          <p className="text-xs text-muted-foreground">No due date — this stays open-ended.</p>
+        )}
       </div>
+
 
       <Field label="Purpose (optional)">
         <Input
