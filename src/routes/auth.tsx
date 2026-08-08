@@ -112,34 +112,43 @@ function AuthPage() {
 
       <div className="mx-auto w-full max-w-sm">
         <h1 className="font-display text-3xl font-extrabold">
-          {mode === "signin" ? "Welcome back" : "Create your account"}
+          {mode === "reset"
+            ? "Reset your password"
+            : mode === "signin"
+              ? "Welcome back"
+              : "Create your account"}
         </h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          {mode === "signin"
-            ? "Pick up your circles, loans and pending confirmations."
-            : "Start tracking who owes whom in under a minute."}
+          {mode === "reset"
+            ? "We'll email you a link to set a new password."
+            : mode === "signin"
+              ? "Pick up your circles, loans and pending confirmations."
+              : "Start tracking who owes whom in under a minute."}
         </p>
 
-        <div className="mt-6 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
-          {(
-            [
-              ["signin", "Sign in"],
-              ["signup", "Sign up"],
-            ] as const
-          ).map(([value, label]) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => setMode(value)}
-              className={cn(
-                "tap rounded-lg text-sm font-semibold transition-colors",
-                mode === value ? "bg-card shadow-card" : "text-muted-foreground",
-              )}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        {mode === "reset" ? null : (
+          <div className="mt-6 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
+            {(
+              [
+                ["signin", "Sign in"],
+                ["signup", "Sign up"],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setMode(value)}
+                className={cn(
+                  "tap rounded-lg text-sm font-semibold transition-colors",
+                  mode === value ? "bg-card shadow-card" : "text-muted-foreground",
+                )}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+
 
         <form onSubmit={submit} className="mt-5 space-y-3.5">
           {mode === "signup" ? (
