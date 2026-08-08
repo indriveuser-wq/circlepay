@@ -189,22 +189,57 @@ function AuthPage() {
               autoComplete="email"
             />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={8}
-              autoComplete={mode === "signin" ? "current-password" : "new-password"}
-            />
-          </div>
+          {mode === "reset" ? null : (
+            <div className="space-y-1.5">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={8}
+                autoComplete={mode === "signin" ? "current-password" : "new-password"}
+              />
+            </div>
+          )}
           <Button type="submit" disabled={busy} className="tap w-full rounded-xl">
-            {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+            {busy
+              ? "Please wait…"
+              : mode === "reset"
+                ? "Send reset link"
+                : mode === "signin"
+                  ? "Sign in"
+                  : "Create account"}
           </Button>
+          {mode === "reset" && resetSent ? (
+            <p className="text-center text-xs text-muted-foreground">
+              If an account exists for {email}, the reset link is on its way.
+            </p>
+          ) : null}
+          {mode === "signin" ? (
+            <button
+              type="button"
+              onClick={() => {
+                setMode("reset");
+                setResetSent(false);
+              }}
+              className="w-full text-center text-xs font-semibold text-muted-foreground underline-offset-4 hover:underline"
+            >
+              Forgot password?
+            </button>
+          ) : null}
+          {mode === "reset" ? (
+            <button
+              type="button"
+              onClick={() => setMode("signin")}
+              className="w-full text-center text-xs font-semibold text-muted-foreground underline-offset-4 hover:underline"
+            >
+              Back to sign in
+            </button>
+          ) : null}
         </form>
+
 
         <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
           <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
