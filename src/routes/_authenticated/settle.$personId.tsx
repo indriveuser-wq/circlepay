@@ -84,6 +84,7 @@ function SettlePage() {
         payeeId: personId,
         amountMinor,
         currency: "NPR",
+        circleId: circleId ?? null,
         loanId: loan?.id ?? null,
         methodProvider: method?.provider ?? null,
         reference: reference.trim() || null,
