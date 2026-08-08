@@ -168,3 +168,27 @@
   min-height: 44px;
   min-width: 44px;
 }
+
+/* Mobile: feature cards stack on top of each other while scrolling,
+   each one parking a little lower so previous headings stay visible. */
+@utility stack-card {
+  position: sticky;
+  top: calc(1rem + (var(--stack-i, 0) * 3.5rem));
+  transition:
+    transform 0.3s ease-out,
+    box-shadow 0.3s ease-out;
+  will-change: transform;
+}
+
+@media (min-width: 640px) {
+  .stack-card {
+    position: static;
+    top: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stack-card {
+    transition: none;
+  }
+}
