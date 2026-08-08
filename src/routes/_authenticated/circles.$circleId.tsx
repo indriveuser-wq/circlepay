@@ -26,6 +26,13 @@ import {
   useProfiles,
 } from "@/lib/hooks";
 import { addCircleMember } from "@/lib/mutations";
+import type { Profile } from "@/lib/db";
+import {
+  findProfileByUsername,
+  normalizeUsername,
+  validateUsername,
+} from "@/lib/username";
+
 import { memberNetBalances, settlementPlanFor } from "@/lib/ledger";
 import { formatMinor } from "@/lib/money";
 
