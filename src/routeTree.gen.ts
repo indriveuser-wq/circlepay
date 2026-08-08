@@ -16,6 +16,7 @@ import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/h
 import { Route as AuthenticatedCirclesIndexRouteImport } from './routes/_authenticated/circles.index'
 import { Route as AuthenticatedCirclesCircleIdRouteImport } from './routes/_authenticated/circles.$circleId'
 import { Route as AuthenticatedPeopleIndexRouteImport } from './routes/_authenticated/people.index'
+import { Route as AuthenticatedPeoplePersonIdRouteImport } from './routes/_authenticated/people.$personId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -54,12 +55,19 @@ const AuthenticatedPeopleIndexRoute =
     path: '/people/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPeoplePersonIdRoute =
+  AuthenticatedPeoplePersonIdRouteImport.update({
+    id: '/people/$personId',
+    path: '/people/$personId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/home': typeof AuthenticatedHomeRoute
   '/circles/$circleId': typeof AuthenticatedCirclesCircleIdRoute
+  '/people/$personId': typeof AuthenticatedPeoplePersonIdRoute
   '/circles/': typeof AuthenticatedCirclesIndexRoute
   '/people/': typeof AuthenticatedPeopleIndexRoute
 }
@@ -68,6 +76,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/home': typeof AuthenticatedHomeRoute
   '/circles/$circleId': typeof AuthenticatedCirclesCircleIdRoute
+  '/people/$personId': typeof AuthenticatedPeoplePersonIdRoute
   '/circles': typeof AuthenticatedCirclesIndexRoute
   '/people': typeof AuthenticatedPeopleIndexRoute
 }
@@ -78,15 +87,29 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/circles/$circleId': typeof AuthenticatedCirclesCircleIdRoute
+  '/_authenticated/people/$personId': typeof AuthenticatedPeoplePersonIdRoute
   '/_authenticated/circles/': typeof AuthenticatedCirclesIndexRoute
   '/_authenticated/people/': typeof AuthenticatedPeopleIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/home' | '/circles/$circleId' | '/circles/' | '/people/'
+    | '/'
+    | '/auth'
+    | '/home'
+    | '/circles/$circleId'
+    | '/people/$personId'
+    | '/circles/'
+    | '/people/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/home' | '/circles/$circleId' | '/circles' | '/people'
+  to:
+    | '/'
+    | '/auth'
+    | '/home'
+    | '/circles/$circleId'
+    | '/people/$personId'
+    | '/circles'
+    | '/people'
   id:
     | '__root__'
     | '/'
@@ -94,6 +117,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/home'
     | '/_authenticated/circles/$circleId'
+    | '/_authenticated/people/$personId'
     | '/_authenticated/circles/'
     | '/_authenticated/people/'
   fileRoutesById: FileRoutesById
@@ -155,12 +179,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPeopleIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/people/$personId': {
+      id: '/_authenticated/people/$personId'
+      path: '/people/$personId'
+      fullPath: '/people/$personId'
+      preLoaderRoute: typeof AuthenticatedPeoplePersonIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedCirclesCircleIdRoute: typeof AuthenticatedCirclesCircleIdRoute
+  AuthenticatedPeoplePersonIdRoute: typeof AuthenticatedPeoplePersonIdRoute
   AuthenticatedCirclesIndexRoute: typeof AuthenticatedCirclesIndexRoute
   AuthenticatedPeopleIndexRoute: typeof AuthenticatedPeopleIndexRoute
 }
@@ -168,6 +200,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedCirclesCircleIdRoute: AuthenticatedCirclesCircleIdRoute,
+  AuthenticatedPeoplePersonIdRoute: AuthenticatedPeoplePersonIdRoute,
   AuthenticatedCirclesIndexRoute: AuthenticatedCirclesIndexRoute,
   AuthenticatedPeopleIndexRoute: AuthenticatedPeopleIndexRoute,
 }
