@@ -211,22 +211,36 @@ function ExpenseForm({
 
   return (
     <div className="space-y-4">
-      <Field label="Circle">
-        <select
-          className="tap w-full rounded-xl border border-input bg-card px-3 text-sm"
-          value={activeCircle?.id ?? ""}
-          onChange={(e) => setCircleId(e.target.value)}
-        >
-          {circles.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.emoji} {c.name}
-            </option>
-          ))}
-        </select>
+      <Field label={`Amount (${activeCircle?.currency ?? "NPR"})`}>
+        <div className="flex items-center gap-2 rounded-2xl border border-input bg-card px-4 py-3">
+          <span className="shrink-0 text-lg font-semibold text-muted-foreground">
+            {activeCircle?.currency ?? "NPR"}
+          </span>
+          <Input
+            inputMode="decimal"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="5000"
+            className="num h-12 min-w-0 flex-1 border-0 bg-transparent p-0 text-right text-3xl font-bold shadow-none focus-visible:ring-0 sm:text-4xl"
+          />
+        </div>
       </Field>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Title" className="col-span-2">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <Field label="Circle" className="sm:col-span-2">
+          <select
+            className="tap w-full rounded-xl border border-input bg-card px-3 text-sm"
+            value={activeCircle?.id ?? ""}
+            onChange={(e) => setCircleId(e.target.value)}
+          >
+            {circles.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.emoji} {c.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Title">
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -234,18 +248,11 @@ function ExpenseForm({
             maxLength={80}
           />
         </Field>
-        <Field label={`Amount (${activeCircle?.currency ?? "NPR"})`}>
-          <Input
-            inputMode="decimal"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="5000"
-          />
-        </Field>
         <Field label="Date">
           <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </Field>
       </div>
+
 
       <Field label="Category">
         <div className="flex flex-wrap gap-1.5">
