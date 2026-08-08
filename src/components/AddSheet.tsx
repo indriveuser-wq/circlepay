@@ -54,7 +54,7 @@ export function AddSheet({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultCircleId?: string;
+  defaultCircleId?: string | undefined;
   defaultMode?: Mode;
 }) {
   const [mode, setMode] = useState<Mode>(defaultMode);
@@ -115,7 +115,7 @@ function ExpenseForm({
   defaultCircleId,
   onDone,
 }: {
-  defaultCircleId?: string;
+  defaultCircleId?: string | undefined;
   onDone: () => void;
 }) {
   const { user } = useAuth();
@@ -171,9 +171,18 @@ function ExpenseForm({
 
   async function submit() {
     if (!activeCircle) return;
-    if (!title.trim()) return toast.error("Give the expense a title.");
-    if (amountMinor <= 0) return toast.error("Enter an amount greater than zero.");
-    if (!balanced) return toast.error("The split doesn't add up to the total yet.");
+    if (!title.trim()) {
+      toast.error("Give the expense a title.");
+      return;
+    }
+    if (amountMinor <= 0) {
+      toast.error("Enter an amount greater than zero.");
+      return;
+    }
+    if (!balanced) {
+      toast.error("The split doesn't add up to the total yet.");
+      return;
+    }
     setBusy(true);
     try {
       await createExpense({
@@ -186,7 +195,7 @@ function ExpenseForm({
         spentOn: date,
         paidBy,
         splitMethod,
-        notes: notes.trim() || undefined,
+        ...(notes.trim() ? { notes: notes.trim() } : {}),
         shares: shares.filter((s) => s.shareMinor > 0),
       });
       toast.success("Expense saved on this device", {
@@ -389,8 +398,14 @@ function LoanForm({ direction, onDone }: { direction: "lend" | "borrow"; onDone:
 
   async function submit() {
     const amountMinor = toMinor(amount);
-    if (!personId) return toast.error("Pick a person first.");
-    if (amountMinor <= 0) return toast.error("Enter an amount greater than zero.");
+    if (!personId) {
+      toast.error("Pick a person first.");
+      return;
+    }
+    if (amountMinor <= 0) {
+      toast.error("Enter an amount greater than zero.");
+      return;
+    }
     setBusy(true);
     try {
       await createLoan({
@@ -399,7 +414,7 @@ function LoanForm({ direction, onDone }: { direction: "lend" | "borrow"; onDone:
         borrowerId: direction === "lend" ? personId : me,
         amountMinor,
         currency: "NPR",
-        purpose: purpose.trim() || undefined,
+        ...(purpose.trim() ? { purpose: purpose.trim() } : {}),
         dueOn: dueOn || null,
       });
       toast.success(direction === "lend" ? "Loan recorded" : "Borrowing recorded");
