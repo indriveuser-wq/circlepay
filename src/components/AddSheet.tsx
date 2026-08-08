@@ -393,7 +393,9 @@ function LoanForm({ direction, onDone }: { direction: "lend" | "borrow"; onDone:
   const [personId, setPersonId] = useState("");
   const [amount, setAmount] = useState("");
   const [purpose, setPurpose] = useState("");
-  const [dueOn, setDueOn] = useState("");
+  const [dueOn, setDueOn] = useState(today());
+  const [hasDue, setHasDue] = useState(false);
+
   const [busy, setBusy] = useState(false);
 
   const results = profiles
