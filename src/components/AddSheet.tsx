@@ -95,7 +95,7 @@ export function AddSheet({
           </div>
         </div>
 
-        <div className="px-5 pb-6 pt-4">
+        <div className="px-4 pb-6 pt-4 sm:px-5">
           {mode === "expense" ? (
             <ExpenseForm
               defaultCircleId={defaultCircleId}
