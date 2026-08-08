@@ -44,7 +44,7 @@ export const Route = createFileRoute("/_authenticated/settle/$personId")({
 
 function SettlePage() {
   const { personId } = useParams({ from: "/_authenticated/settle/$personId" });
-  const { loanId } = useSearch({ from: "/_authenticated/settle/$personId" });
+  const { loanId, circleId } = useSearch({ from: "/_authenticated/settle/$personId" });
   const navigate = useNavigate();
   const { user } = useAuth();
   const me = user?.id ?? "";
@@ -52,7 +52,7 @@ function SettlePage() {
   const methods = usePaymentMethods(personId)
     .filter((m) => m.is_active)
     .sort((a, b) => Number(b.is_preferred) - Number(a.is_preferred));
-  const { balances } = useLedger(me);
+  const { balances } = useLedger(me, circleId);
   const loans = useLoans();
   const repayments = useRepayments();
 
@@ -60,6 +60,7 @@ function SettlePage() {
   const suggested = loan
     ? loanOutstanding(loan, repayments)
     : Math.max(0, -(balances.get(personId) ?? 0));
+
 
   const [methodIndex, setMethodIndex] = useState(0);
   const [amount, setAmount] = useState(suggested > 0 ? String(toMajor(suggested)) : "");
