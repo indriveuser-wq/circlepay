@@ -541,6 +541,10 @@ export type Database = {
         Args: { _expense: string; _user: string }
         Returns: boolean
       }
+      shares_context: {
+        Args: { _me: string; _other: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
