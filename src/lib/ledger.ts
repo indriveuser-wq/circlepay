@@ -123,18 +123,28 @@ export function simplifyDebts(graph: Map<string, number>): DebtEdge[] {
 }
 
 /**
- * Settlement suggestions that involve only the current user.
- * Derived from my own net balances so no third-party debt structure
- * (A owes B) can ever leak into what C sees.
+ * Aggregated net position of every member in the graph.
+ * Positive => the group owes them; negative => they owe the group.
+ * Individual expense rows are never modified — this is derived on read.
  */
-export function mySettlementEdges(graph: Map<string, number>, userId: string): DebtEdge[] {
-  const edges: DebtEdge[] = [];
-  for (const [other, value] of netBalanceFor(graph, userId)) {
-    if (value > 0) edges.push({ debtor: other, creditor: userId, amountMinor: value });
-    else if (value < 0) edges.push({ debtor: userId, creditor: other, amountMinor: -value });
+export function memberNetBalances(graph: Map<string, number>): Map<string, number> {
+  const net = new Map<string, number>();
+  for (const [k, amount] of graph) {
+    const [debtor, creditor] = k.split("|") as [string, string];
+    net.set(debtor, (net.get(debtor) ?? 0) - amount);
+    net.set(creditor, (net.get(creditor) ?? 0) + amount);
   }
-  return edges.sort((a, b) => b.amountMinor - a.amountMinor);
+  return net;
 }
+
+/**
+ * Minimised settlement plan, then narrowed to the transactions the current
+ * user must make or receive. Debts between two other members stay private.
+ */
+export function settlementPlanFor(graph: Map<string, number>, userId: string): DebtEdge[] {
+  return simplifyDebts(graph).filter((e) => e.debtor === userId || e.creditor === userId);
+}
+
 
 export function loanOutstanding(loan: Loan, repayments: LoanRepayment[]): number {
   const paid = repayments
