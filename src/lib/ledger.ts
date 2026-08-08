@@ -122,6 +122,20 @@ export function simplifyDebts(graph: Map<string, number>): DebtEdge[] {
   return edges;
 }
 
+/**
+ * Settlement suggestions that involve only the current user.
+ * Derived from my own net balances so no third-party debt structure
+ * (A owes B) can ever leak into what C sees.
+ */
+export function mySettlementEdges(graph: Map<string, number>, userId: string): DebtEdge[] {
+  const edges: DebtEdge[] = [];
+  for (const [other, value] of netBalanceFor(graph, userId)) {
+    if (value > 0) edges.push({ debtor: other, creditor: userId, amountMinor: value });
+    else if (value < 0) edges.push({ debtor: userId, creditor: other, amountMinor: -value });
+  }
+  return edges.sort((a, b) => b.amountMinor - a.amountMinor);
+}
+
 export function loanOutstanding(loan: Loan, repayments: LoanRepayment[]): number {
   const paid = repayments
     .filter((r) => r.loan_id === loan.id)

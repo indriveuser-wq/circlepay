@@ -26,7 +26,7 @@ import {
   useProfiles,
 } from "@/lib/hooks";
 import { addCircleMember } from "@/lib/mutations";
-import { simplifyDebts } from "@/lib/ledger";
+import { mySettlementEdges } from "@/lib/ledger";
 import { formatMinor } from "@/lib/money";
 
 export const Route = createFileRoute("/_authenticated/circles/$circleId")({
@@ -57,12 +57,9 @@ function CircleDetail() {
   const [addOpen, setAddOpen] = useState(false);
   const [memberOpen, setMemberOpen] = useState(false);
 
-  // Only show settlement suggestions that involve you — debts between two
-  // other members are private to them.
-  const suggestions = useMemo(
-    () => simplifyDebts(graph).filter((e) => e.debtor === me || e.creditor === me),
-    [graph, me],
-  );
+  // Suggestions are derived only from my own net balances — debts between two
+  // other members never enter this computation.
+  const suggestions = useMemo(() => mySettlementEdges(graph, me), [graph, me]);
 
   if (!circle) {
     return (
