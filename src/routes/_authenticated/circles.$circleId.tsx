@@ -180,33 +180,61 @@ function CircleDetail() {
           {expenses.length ? (
             <ul className="card-soft divide-y divide-border overflow-hidden">
               {expenses.map((expense) => {
-                const myShare =
-                  participants.find((p) => p.expense_id === expense.id && p.user_id === me)
-                    ?.share_minor ?? 0;
+                const rows = participants.filter((p) => p.expense_id === expense.id);
+                const myShare = rows.find((p) => p.user_id === me)?.share_minor ?? 0;
+                const expanded = openExpense === expense.id;
                 return (
-                  <li key={expense.id} className="flex items-center gap-3 px-4 py-3">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary">
-                      <Receipt className="h-4 w-4" aria-hidden="true" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold">{expense.title}</span>
-                      <span className="block truncate text-xs text-muted-foreground">
-                        {expense.paid_by === me ? "You" : displayName(profiles.get(expense.paid_by))}{" "}
-                        paid · {expense.spent_on}
+                  <li key={expense.id}>
+                    <button
+                      type="button"
+                      aria-expanded={expanded}
+                      onClick={() => setOpenExpense(expanded ? null : expense.id)}
+                      className="tap flex w-full items-center gap-3 px-4 py-3 text-left"
+                    >
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary">
+                        <Receipt className="h-4 w-4" aria-hidden="true" />
                       </span>
-                    </span>
-                    <span className="shrink-0 text-right">
-                      <span className="num block text-sm font-bold">
-                        {formatMinor(expense.amount_minor, expense.currency)}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold">{expense.title}</span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {expense.paid_by === me ? "You" : displayName(profiles.get(expense.paid_by))}{" "}
+                          paid · {expense.spent_on} · {rows.length} sharing
+                        </span>
                       </span>
-                      <span className="num block text-xs text-muted-foreground">
-                        your share {formatMinor(myShare, expense.currency)}
+                      <span className="shrink-0 text-right">
+                        <span className="num block text-sm font-bold">
+                          {formatMinor(expense.amount_minor, expense.currency)}
+                        </span>
+                        <span className="num block text-xs text-muted-foreground">
+                          {myShare
+                            ? `your share ${formatMinor(myShare, expense.currency)}`
+                            : "not shared with you"}
+                        </span>
                       </span>
-                    </span>
+                    </button>
+                    {expanded ? (
+                      <ul className="space-y-1 border-t border-border bg-muted/40 px-4 py-3">
+                        {rows.map((row) => (
+                          <li key={row.id} className="flex items-center gap-2 text-xs">
+                            <span className="min-w-0 flex-1 truncate">
+                              {row.user_id === me ? "You" : displayName(profiles.get(row.user_id))}
+                              {row.user_id === expense.paid_by ? " · paid" : ""}
+                            </span>
+                            <span className="num shrink-0 font-semibold">
+                              {formatMinor(row.share_minor, expense.currency)}
+                            </span>
+                          </li>
+                        ))}
+                        {!rows.length ? (
+                          <li className="text-xs text-muted-foreground">No split recorded.</li>
+                        ) : null}
+                      </ul>
+                    ) : null}
                   </li>
                 );
               })}
             </ul>
+
           ) : (
             <p className="card-soft p-5 text-sm text-muted-foreground">
               No expenses yet. Tap + to add the first one.
