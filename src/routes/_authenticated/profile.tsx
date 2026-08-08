@@ -45,6 +45,11 @@ function ProfilePage() {
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [savingProfile, setSavingProfile] = useState(false);
 
+  useEffect(() => {
+    if (profile?.username) setUsername((current) => current || profile.username || "");
+  }, [profile?.username]);
+
+
   const [provider, setProvider] = useState("eSewa");
   const [account, setAccount] = useState("");
   const [busy, setBusy] = useState(false);
