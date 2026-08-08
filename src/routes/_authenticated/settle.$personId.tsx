@@ -37,6 +37,7 @@ export const Route = createFileRoute("/_authenticated/settle/$personId")({
   }),
   validateSearch: (search: Record<string, unknown>) => ({
     loanId: typeof search["loanId"] === "string" ? (search["loanId"] as string) : undefined,
+    circleId: typeof search["circleId"] === "string" ? (search["circleId"] as string) : undefined,
   }),
   component: SettlePage,
 });
