@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedCirclesIndexRouteImport } from './routes/_authenticated/circles.index'
 import { Route as AuthenticatedCirclesCircleIdRouteImport } from './routes/_authenticated/circles.$circleId'
 import { Route as AuthenticatedPeopleIndexRouteImport } from './routes/_authenticated/people.index'
@@ -51,6 +52,11 @@ const AuthenticatedNotificationsRoute =
     path: '/notifications',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCirclesIndexRoute =
   AuthenticatedCirclesIndexRouteImport.update({
     id: '/circles/',
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/activity': typeof AuthenticatedActivityRoute
   '/home': typeof AuthenticatedHomeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/circles/$circleId': typeof AuthenticatedCirclesCircleIdRoute
   '/people/$personId': typeof AuthenticatedPeoplePersonIdRoute
   '/settle/$personId': typeof AuthenticatedSettlePersonIdRoute
@@ -100,6 +107,7 @@ export interface FileRoutesByTo {
   '/activity': typeof AuthenticatedActivityRoute
   '/home': typeof AuthenticatedHomeRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/circles/$circleId': typeof AuthenticatedCirclesCircleIdRoute
   '/people/$personId': typeof AuthenticatedPeoplePersonIdRoute
   '/settle/$personId': typeof AuthenticatedSettlePersonIdRoute
@@ -114,6 +122,7 @@ export interface FileRoutesById {
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/circles/$circleId': typeof AuthenticatedCirclesCircleIdRoute
   '/_authenticated/people/$personId': typeof AuthenticatedPeoplePersonIdRoute
   '/_authenticated/settle/$personId': typeof AuthenticatedSettlePersonIdRoute
@@ -128,6 +137,7 @@ export interface FileRouteTypes {
     | '/activity'
     | '/home'
     | '/notifications'
+    | '/profile'
     | '/circles/$circleId'
     | '/people/$personId'
     | '/settle/$personId'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/activity'
     | '/home'
     | '/notifications'
+    | '/profile'
     | '/circles/$circleId'
     | '/people/$personId'
     | '/settle/$personId'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/_authenticated/activity'
     | '/_authenticated/home'
     | '/_authenticated/notifications'
+    | '/_authenticated/profile'
     | '/_authenticated/circles/$circleId'
     | '/_authenticated/people/$personId'
     | '/_authenticated/settle/$personId'
@@ -210,6 +222,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/circles/': {
       id: '/_authenticated/circles/'
       path: '/circles'
@@ -252,6 +271,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedCirclesCircleIdRoute: typeof AuthenticatedCirclesCircleIdRoute
   AuthenticatedPeoplePersonIdRoute: typeof AuthenticatedPeoplePersonIdRoute
   AuthenticatedSettlePersonIdRoute: typeof AuthenticatedSettlePersonIdRoute
@@ -263,6 +283,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedCirclesCircleIdRoute: AuthenticatedCirclesCircleIdRoute,
   AuthenticatedPeoplePersonIdRoute: AuthenticatedPeoplePersonIdRoute,
   AuthenticatedSettlePersonIdRoute: AuthenticatedSettlePersonIdRoute,
