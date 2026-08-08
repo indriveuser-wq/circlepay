@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { LogOut, Star, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
@@ -17,6 +17,8 @@ import {
 } from "@/lib/mutations";
 import { isOnline } from "@/lib/sync";
 import { uploadImage } from "@/lib/upload";
+import { changeUsername, normalizeUsername, validateUsername } from "@/lib/username";
+
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
@@ -39,6 +41,15 @@ function ProfilePage() {
   const navigate = useNavigate();
 
   const [name, setName] = useState(profile?.name ?? "");
+  const [username, setUsername] = useState(profile?.username ?? "");
+  const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  useEffect(() => {
+    if (profile?.username) setUsername((current) => current || profile.username || "");
+  }, [profile?.username]);
+
+
   const [provider, setProvider] = useState("eSewa");
   const [account, setAccount] = useState("");
   const [busy, setBusy] = useState(false);
@@ -54,17 +65,65 @@ function ProfilePage() {
               maxLength={80}
             />
           </Field>
+          <Field label="Username (how people add you to circles)">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">@</span>
+              <Input
+                value={username}
+                onChange={(e) => {
+                  setUsername(normalizeUsername(e.target.value));
+                  setUsernameError(null);
+                }}
+                placeholder={profile?.username ?? "yourname"}
+                inputMode="text"
+                autoCapitalize="none"
+                autoComplete="username"
+                maxLength={20}
+                aria-invalid={usernameError ? true : undefined}
+              />
+            </div>
+          </Field>
+          {usernameError ? (
+            <p className="text-xs font-medium text-destructive">{usernameError}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              3–20 characters: lowercase letters, numbers, underscores. Must be unique.
+            </p>
+          )}
           <Button
             variant="outline"
+            disabled={savingProfile}
             className="tap w-full rounded-xl"
             onClick={async () => {
-              await updateProfile(me, { name: name.trim() || profile?.name || "" });
-              toast.success("Profile updated");
+              setSavingProfile(true);
+              try {
+                const nextName = name.trim() || profile?.name || "";
+                if (nextName !== profile?.name) await updateProfile(me, { name: nextName });
+
+                const nextUsername = normalizeUsername(username);
+                if (nextUsername && nextUsername !== (profile?.username ?? "")) {
+                  const problem = validateUsername(nextUsername);
+                  if (problem) {
+                    setUsernameError(problem);
+                    toast.error(problem);
+                    return;
+                  }
+                  await changeUsername(me, nextUsername);
+                }
+                toast.success("Profile updated");
+              } catch (err) {
+                const message = err instanceof Error ? err.message : "Could not save profile";
+                setUsernameError(message);
+                toast.error(message);
+              } finally {
+                setSavingProfile(false);
+              }
             }}
           >
             Save profile
           </Button>
         </section>
+
 
         <section aria-labelledby="pm" className="space-y-3">
           <h2 id="pm" className="text-sm font-bold uppercase tracking-wide text-muted-foreground">

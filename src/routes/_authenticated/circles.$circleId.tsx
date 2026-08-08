@@ -23,9 +23,16 @@ import {
   useLedger,
   useParticipants,
   useProfileMap,
-  useProfiles,
+  
 } from "@/lib/hooks";
 import { addCircleMember } from "@/lib/mutations";
+import type { Profile } from "@/lib/db";
+import {
+  findProfileByUsername,
+  normalizeUsername,
+  validateUsername,
+} from "@/lib/username";
+
 import { memberNetBalances, settlementPlanFor } from "@/lib/ledger";
 import { formatMinor } from "@/lib/money";
 
@@ -259,15 +266,37 @@ function AddMemberDialog({
   circleId: string;
 }) {
   const members = useCircleMembers(circleId);
-  const profiles = useProfiles();
   const [query, setQuery] = useState("");
+  const [match, setMatch] = useState<Profile | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [searching, setSearching] = useState(false);
   const existing = new Set(members.map((m) => m.user_id));
-  const results = profiles
-    .filter((p) => !existing.has(p.id))
-    .filter((p) =>
-      query ? `${p.name} ${p.username ?? ""}`.toLowerCase().includes(query.toLowerCase()) : true,
-    )
-    .slice(0, 8);
+
+  async function search() {
+    setMatch(null);
+    const value = normalizeUsername(query);
+    const problem = validateUsername(value);
+    if (problem) {
+      setError(problem);
+      return;
+    }
+    setSearching(true);
+    try {
+      const found = await findProfileByUsername(value);
+      if (!found) {
+        setError(`No account found for @${value}. Usernames must match exactly.`);
+        return;
+      }
+      if (existing.has(found.id)) {
+        setError(`@${value} is already in this circle.`);
+        return;
+      }
+      setError(null);
+      setMatch(found);
+    } finally {
+      setSearching(false);
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -275,40 +304,65 @@ function AddMemberDialog({
         <DialogHeader className="text-left">
           <DialogTitle className="font-display text-xl">Add member</DialogTitle>
           <DialogDescription className="text-xs">
-            They'll see every expense in this circle.
+            Enter their full username. They'll see every expense in this circle.
           </DialogDescription>
         </DialogHeader>
-        <Field label="Search people">
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Name or username"
-          />
-        </Field>
-        <ul className="space-y-1.5">
-          {results.map((p) => (
-            <li key={p.id}>
-              <Button
-                variant="outline"
-                className="tap w-full justify-start gap-3 rounded-xl"
-                onClick={async () => {
-                  await addCircleMember(circleId, p.id);
-                  toast.success(`${p.name} added`);
-                  onOpenChange(false);
+        <form
+          className="space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void search();
+          }}
+        >
+          <Field label="Username">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">@</span>
+              <Input
+                value={query}
+                onChange={(e) => {
+                  setQuery(normalizeUsername(e.target.value));
+                  setError(null);
+                  setMatch(null);
                 }}
-              >
-                <PersonAvatar profile={p} size="sm" />
-                <span className="min-w-0 truncate">{p.name}</span>
-              </Button>
-            </li>
-          ))}
-          {!results.length ? (
-            <li className="rounded-xl bg-muted/60 px-3 py-4 text-center text-sm text-muted-foreground">
-              Nobody left to add.
-            </li>
-          ) : null}
-        </ul>
+                placeholder="exact_username"
+                autoCapitalize="none"
+                autoComplete="off"
+                maxLength={20}
+                aria-invalid={error ? true : undefined}
+              />
+            </div>
+          </Field>
+          <Button type="submit" disabled={searching} className="tap w-full rounded-xl">
+            {searching ? "Searching…" : "Find account"}
+          </Button>
+        </form>
+
+        {error ? <p className="text-sm font-medium text-destructive">{error}</p> : null}
+
+        {match ? (
+          <Button
+            variant="outline"
+            className="tap w-full justify-start gap-3 rounded-xl"
+            onClick={async () => {
+              await addCircleMember(circleId, match.id);
+              toast.success(`${match.name || `@${match.username}`} added`);
+              setQuery("");
+              setMatch(null);
+              onOpenChange(false);
+            }}
+          >
+            <PersonAvatar profile={match} size="sm" />
+            <span className="min-w-0 flex-1 text-left">
+              <span className="block truncate text-sm font-semibold">{match.name}</span>
+              <span className="block truncate text-xs text-muted-foreground">
+                @{match.username}
+              </span>
+            </span>
+            <UserPlus className="h-4 w-4" aria-hidden="true" />
+          </Button>
+        ) : null}
       </DialogContent>
     </Dialog>
   );
 }
+
