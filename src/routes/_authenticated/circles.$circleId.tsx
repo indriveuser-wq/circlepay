@@ -23,7 +23,7 @@ import {
   useLedger,
   useParticipants,
   useProfileMap,
-  useProfiles,
+  
 } from "@/lib/hooks";
 import { addCircleMember } from "@/lib/mutations";
 import type { Profile } from "@/lib/db";
