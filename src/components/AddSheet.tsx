@@ -438,6 +438,19 @@ function LoanForm({ direction, onDone }: { direction: "lend" | "borrow"; onDone:
 
   return (
     <div className="space-y-4">
+      <Field label="Amount (NPR)">
+        <div className="flex items-center gap-2 rounded-2xl border border-input bg-card px-4 py-3">
+          <span className="shrink-0 text-lg font-semibold text-muted-foreground">Rs</span>
+          <Input
+            inputMode="decimal"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="5000"
+            className="num h-12 min-w-0 flex-1 border-0 bg-transparent p-0 text-right text-3xl font-bold shadow-none focus-visible:ring-0 sm:text-4xl"
+          />
+        </div>
+      </Field>
+
       <Field label={direction === "lend" ? "Lent to" : "Borrowed from"}>
         <Input
           value={query}
@@ -456,7 +469,7 @@ function LoanForm({ direction, onDone }: { direction: "lend" | "borrow"; onDone:
                 personId === p.id ? "border-primary bg-secondary" : "border-border bg-card",
               )}
             >
-              <PersonAvatar profile={p} size="sm" />
+              <PersonAvatar profile={p} size="sm" className="shrink-0" />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-semibold">{p.name}</span>
                 <span className="block truncate text-xs text-muted-foreground">
@@ -473,19 +486,25 @@ function LoanForm({ direction, onDone }: { direction: "lend" | "borrow"; onDone:
         ) : null}
       </ul>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Field label="Amount (NPR)">
-          <Input
-            inputMode="decimal"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="5000"
+      <div className="space-y-3 rounded-2xl border border-border bg-card p-3">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+          <Label htmlFor="due-toggle" className="min-w-0 text-sm font-semibold">
+            Set a due date
+          </Label>
+          <Switch
+            id="due-toggle"
+            checked={hasDue}
+            onCheckedChange={setHasDue}
+            className="shrink-0"
           />
-        </Field>
-        <Field label="Due date (optional)">
+        </div>
+        {hasDue ? (
           <Input type="date" value={dueOn} onChange={(e) => setDueOn(e.target.value)} />
-        </Field>
+        ) : (
+          <p className="text-xs text-muted-foreground">No due date — this stays open-ended.</p>
+        )}
       </div>
+
 
       <Field label="Purpose (optional)">
         <Input
