@@ -26,7 +26,7 @@ import {
   useProfiles,
 } from "@/lib/hooks";
 import { addCircleMember } from "@/lib/mutations";
-import { mySettlementEdges } from "@/lib/ledger";
+import { memberNetBalances, settlementPlanFor } from "@/lib/ledger";
 import { formatMinor } from "@/lib/money";
 
 export const Route = createFileRoute("/_authenticated/circles/$circleId")({
@@ -53,13 +53,18 @@ function CircleDetail() {
     .filter((e) => !e.deleted_at)
     .sort((a, b) => b.spent_on.localeCompare(a.spent_on));
   const participants = useParticipants();
-  const { graph, balances } = useLedger(me, circleId);
+  const { graph } = useLedger(me, circleId);
   const [addOpen, setAddOpen] = useState(false);
   const [memberOpen, setMemberOpen] = useState(false);
+  const [openExpense, setOpenExpense] = useState<string | null>(null);
 
-  // Suggestions are derived only from my own net balances — debts between two
-  // other members never enter this computation.
-  const suggestions = useMemo(() => mySettlementEdges(graph, me), [graph, me]);
+  // Aggregated net position per member — derived from every expense share,
+  // repayment and confirmed settlement in this circle. Expenses are untouched.
+  const netBalances = useMemo(() => memberNetBalances(graph), [graph]);
+
+  // Minimised settlement plan, narrowed to transactions that involve me:
+  // debts between two other members never enter what I can see.
+  const suggestions = useMemo(() => settlementPlanFor(graph, me), [graph, me]);
 
   if (!circle) {
     return (
@@ -89,11 +94,11 @@ function CircleDetail() {
       <div className="space-y-6">
         <section aria-labelledby="balances" className="space-y-3">
           <h2 id="balances" className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-            Balances
+            Net circle balances
           </h2>
           <ul className="card-soft divide-y divide-border overflow-hidden">
             {members.map((m) => {
-              const value = balances.get(m.user_id) ?? 0;
+              const value = netBalances.get(m.user_id) ?? 0;
               const isMe = m.user_id === me;
               return (
                 <li key={m.id} className="flex items-center gap-3 px-4 py-3">
@@ -101,26 +106,32 @@ function CircleDetail() {
                   <span className="min-w-0 flex-1 truncate text-sm font-medium">
                     {isMe ? "You" : displayName(profiles.get(m.user_id))}
                   </span>
-                  {isMe ? (
-                    <span className="text-xs text-muted-foreground">that's you</span>
-                  ) : (
+                  <span className="shrink-0 text-right">
                     <span
-                      className={`num text-sm font-bold ${
+                      className={`num block text-sm font-bold ${
                         value > 0 ? "text-due" : value < 0 ? "text-owe" : "text-muted-foreground"
                       }`}
                     >
                       {value === 0
                         ? "settled"
-                        : `${value > 0 ? "owes you " : "you owe "}${formatMinor(
+                        : `${value > 0 ? "+" : "−"}${formatMinor(
                             Math.abs(value),
                             circle.currency,
                           )}`}
                     </span>
-                  )}
+                    <span className="block text-[0.7rem] text-muted-foreground">
+                      {value === 0
+                        ? "all square"
+                        : value > 0
+                          ? "gets back"
+                          : "owes the circle"}
+                    </span>
+                  </span>
                 </li>
               );
             })}
           </ul>
+
           <button
             type="button"
             onClick={() => setMemberOpen(true)}
@@ -169,33 +180,61 @@ function CircleDetail() {
           {expenses.length ? (
             <ul className="card-soft divide-y divide-border overflow-hidden">
               {expenses.map((expense) => {
-                const myShare =
-                  participants.find((p) => p.expense_id === expense.id && p.user_id === me)
-                    ?.share_minor ?? 0;
+                const rows = participants.filter((p) => p.expense_id === expense.id);
+                const myShare = rows.find((p) => p.user_id === me)?.share_minor ?? 0;
+                const expanded = openExpense === expense.id;
                 return (
-                  <li key={expense.id} className="flex items-center gap-3 px-4 py-3">
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary">
-                      <Receipt className="h-4 w-4" aria-hidden="true" />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold">{expense.title}</span>
-                      <span className="block truncate text-xs text-muted-foreground">
-                        {expense.paid_by === me ? "You" : displayName(profiles.get(expense.paid_by))}{" "}
-                        paid · {expense.spent_on}
+                  <li key={expense.id}>
+                    <button
+                      type="button"
+                      aria-expanded={expanded}
+                      onClick={() => setOpenExpense(expanded ? null : expense.id)}
+                      className="tap flex w-full items-center gap-3 px-4 py-3 text-left"
+                    >
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-secondary">
+                        <Receipt className="h-4 w-4" aria-hidden="true" />
                       </span>
-                    </span>
-                    <span className="shrink-0 text-right">
-                      <span className="num block text-sm font-bold">
-                        {formatMinor(expense.amount_minor, expense.currency)}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-semibold">{expense.title}</span>
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {expense.paid_by === me ? "You" : displayName(profiles.get(expense.paid_by))}{" "}
+                          paid · {expense.spent_on} · {rows.length} sharing
+                        </span>
                       </span>
-                      <span className="num block text-xs text-muted-foreground">
-                        your share {formatMinor(myShare, expense.currency)}
+                      <span className="shrink-0 text-right">
+                        <span className="num block text-sm font-bold">
+                          {formatMinor(expense.amount_minor, expense.currency)}
+                        </span>
+                        <span className="num block text-xs text-muted-foreground">
+                          {myShare
+                            ? `your share ${formatMinor(myShare, expense.currency)}`
+                            : "not shared with you"}
+                        </span>
                       </span>
-                    </span>
+                    </button>
+                    {expanded ? (
+                      <ul className="space-y-1 border-t border-border bg-muted/40 px-4 py-3">
+                        {rows.map((row) => (
+                          <li key={row.id} className="flex items-center gap-2 text-xs">
+                            <span className="min-w-0 flex-1 truncate">
+                              {row.user_id === me ? "You" : displayName(profiles.get(row.user_id))}
+                              {row.user_id === expense.paid_by ? " · paid" : ""}
+                            </span>
+                            <span className="num shrink-0 font-semibold">
+                              {formatMinor(row.share_minor, expense.currency)}
+                            </span>
+                          </li>
+                        ))}
+                        {!rows.length ? (
+                          <li className="text-xs text-muted-foreground">No split recorded.</li>
+                        ) : null}
+                      </ul>
+                    ) : null}
                   </li>
                 );
               })}
             </ul>
+
           ) : (
             <p className="card-soft p-5 text-sm text-muted-foreground">
               No expenses yet. Tap + to add the first one.
