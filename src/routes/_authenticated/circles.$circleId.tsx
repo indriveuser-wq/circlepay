@@ -57,7 +57,12 @@ function CircleDetail() {
   const [addOpen, setAddOpen] = useState(false);
   const [memberOpen, setMemberOpen] = useState(false);
 
-  const suggestions = useMemo(() => simplifyDebts(graph), [graph]);
+  // Only show settlement suggestions that involve you — debts between two
+  // other members are private to them.
+  const suggestions = useMemo(
+    () => simplifyDebts(graph).filter((e) => e.debtor === me || e.creditor === me),
+    [graph, me],
+  );
 
   if (!circle) {
     return (

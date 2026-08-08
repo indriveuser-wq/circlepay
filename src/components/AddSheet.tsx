@@ -317,7 +317,10 @@ function ExpenseForm({
           const included = participants.includes(id);
           const share = shares.find((s) => s.userId === id)?.shareMinor ?? 0;
           return (
-            <li key={id} className="flex items-center gap-3 bg-card px-3 py-2.5">
+            <li
+              key={id}
+              className="grid grid-cols-[auto_auto_minmax(0,1fr)_auto] items-center gap-x-2 gap-y-2 bg-card px-3 py-2.5"
+            >
               <input
                 type="checkbox"
                 checked={included}
@@ -331,22 +334,23 @@ function ExpenseForm({
                 className="h-4.5 w-4.5 shrink-0 rounded border-input"
               />
               <PersonAvatar profile={profiles.get(id)} size="sm" className="shrink-0" />
-              <span className="min-w-0 flex-1 truncate text-sm font-medium">
+              <span className="min-w-0 truncate text-sm font-medium">
                 {id === me ? "You" : displayName(profiles.get(id))}
+              </span>
+              <span className="num shrink-0 text-right text-xs text-muted-foreground sm:text-sm">
+                {included ? formatMinor(share, activeCircle?.currency) : "—"}
               </span>
               {included && splitMethod !== "equal" ? (
                 <Input
                   inputMode="decimal"
                   value={weights[id] ?? ""}
                   onChange={(e) => setWeights({ ...weights, [id]: e.target.value })}
-                  placeholder={splitMethod === "percent" ? "%" : splitMethod === "shares" ? "1" : "0"}
-                  className="h-9 w-14 shrink-0 text-right sm:w-20"
+                  placeholder={
+                    splitMethod === "percent" ? "%" : splitMethod === "shares" ? "1" : "0"
+                  }
+                  className="col-span-4 h-9 w-full text-right"
                 />
               ) : null}
-              <span className="num w-20 shrink-0 text-right text-xs text-muted-foreground sm:w-24 sm:text-sm">
-                {included ? formatMinor(share, activeCircle?.currency) : "—"}
-              </span>
-
             </li>
           );
         })}
