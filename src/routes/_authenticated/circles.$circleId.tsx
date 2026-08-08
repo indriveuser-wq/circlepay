@@ -94,11 +94,11 @@ function CircleDetail() {
       <div className="space-y-6">
         <section aria-labelledby="balances" className="space-y-3">
           <h2 id="balances" className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-            Balances
+            Net circle balances
           </h2>
           <ul className="card-soft divide-y divide-border overflow-hidden">
             {members.map((m) => {
-              const value = balances.get(m.user_id) ?? 0;
+              const value = netBalances.get(m.user_id) ?? 0;
               const isMe = m.user_id === me;
               return (
                 <li key={m.id} className="flex items-center gap-3 px-4 py-3">
@@ -106,26 +106,32 @@ function CircleDetail() {
                   <span className="min-w-0 flex-1 truncate text-sm font-medium">
                     {isMe ? "You" : displayName(profiles.get(m.user_id))}
                   </span>
-                  {isMe ? (
-                    <span className="text-xs text-muted-foreground">that's you</span>
-                  ) : (
+                  <span className="shrink-0 text-right">
                     <span
-                      className={`num text-sm font-bold ${
+                      className={`num block text-sm font-bold ${
                         value > 0 ? "text-due" : value < 0 ? "text-owe" : "text-muted-foreground"
                       }`}
                     >
                       {value === 0
                         ? "settled"
-                        : `${value > 0 ? "owes you " : "you owe "}${formatMinor(
+                        : `${value > 0 ? "+" : "−"}${formatMinor(
                             Math.abs(value),
                             circle.currency,
                           )}`}
                     </span>
-                  )}
+                    <span className="block text-[0.7rem] text-muted-foreground">
+                      {value === 0
+                        ? "all square"
+                        : value > 0
+                          ? "gets back"
+                          : "owes the circle"}
+                    </span>
+                  </span>
                 </li>
               );
             })}
           </ul>
+
           <button
             type="button"
             onClick={() => setMemberOpen(true)}
