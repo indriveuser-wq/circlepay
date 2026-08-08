@@ -89,8 +89,23 @@ const PULL_TABLES = [
   "friends",
 ] as const;
 
+/** Tables whose rows are informational — never block the queue for them. */
+const BEST_EFFORT_TABLES = new Set<OutboxTable>(["notifications", "activity_events"]);
+const MAX_ATTEMPTS = 5;
+
+function isPermanent(error: unknown): boolean {
+  const e = error as { code?: string; status?: number; message?: string } | null;
+  if (!e) return false;
+  if (e.status === 401 || e.status === 403) return true;
+  const code = e.code ?? "";
+  // 42501 = insufficient privilege / RLS, 23xxx = constraint violations, 22xxx = bad data
+  return code === "42501" || code.startsWith("23") || code.startsWith("22");
+}
+
 async function pushOutbox(): Promise<void> {
   const entries = await db.outbox.orderBy("seq").toArray();
+  let softError: string | null = null;
+
   for (const entry of entries) {
     if (!entry.seq) continue;
     try {
@@ -114,14 +129,34 @@ async function pushOutbox(): Promise<void> {
       await db.outbox.delete(entry.seq);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      await db.outbox.update(entry.seq, {
-        attempts: entry.attempts + 1,
-        lastError: message,
-      });
+      const attempts = entry.attempts + 1;
+      const permanent = isPermanent(error);
+
+      // Informational rows (and anything hopelessly stuck) must never wedge the
+      // queue — drop them so real data keeps syncing.
+      if (BEST_EFFORT_TABLES.has(entry.table) && permanent) {
+        await db.outbox.delete(entry.seq);
+        continue;
+      }
+      if (permanent && attempts >= MAX_ATTEMPTS) {
+        await db.outbox.delete(entry.seq);
+        softError = message;
+        continue;
+      }
+
+      await db.outbox.update(entry.seq, { attempts, lastError: message });
+      if (permanent) {
+        // Skip it this round but keep going with the rest of the queue.
+        softError = message;
+        continue;
+      }
       throw new Error(message);
     }
   }
+
+  if (softError) setStatus({ error: softError });
 }
+
 
 async function pullAll(): Promise<void> {
   for (const table of PULL_TABLES) {
