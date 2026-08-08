@@ -109,18 +109,26 @@ function Landing() {
           </div>
         </section>
 
-        <section aria-labelledby="features" className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <section
+          aria-labelledby="features"
+          className="grid gap-3 pb-24 sm:grid-cols-2 sm:pb-0 lg:grid-cols-3"
+        >
           <h2 id="features" className="sr-only">
             Features
           </h2>
-          {FEATURES.map((f) => (
-            <article key={f.title} className="card-soft p-5">
+          {FEATURES.map((f, i) => (
+            <article
+              key={f.title}
+              style={{ "--stack-i": i, zIndex: i + 1 } as React.CSSProperties}
+              className="card-soft stack-card animate-fade-in p-5"
+            >
               <f.icon className="h-5 w-5 text-primary" aria-hidden="true" />
               <h3 className="mt-3 text-base font-bold">{f.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">{f.body}</p>
             </article>
           ))}
         </section>
+
 
         <section id="how" className="mt-16 rounded-3xl bg-surface p-6 sm:p-10">
           <h2 className="font-display text-2xl font-bold sm:text-3xl">
