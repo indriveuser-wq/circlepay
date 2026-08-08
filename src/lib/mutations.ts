@@ -9,6 +9,7 @@ import {
   type CircleMember,
   type Expense,
   type ExpenseParticipant,
+  type Friend,
   type Loan,
   type LoanRepayment,
   type PaymentMethod,
