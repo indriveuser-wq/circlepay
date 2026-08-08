@@ -9,6 +9,7 @@ import {
   type CircleMember,
   type Expense,
   type ExpenseParticipant,
+  type Friend,
   type Loan,
   type LoanRepayment,
   type PaymentMethod,
@@ -218,6 +219,33 @@ export async function addCircleMember(
 export async function removeCircleMember(id: string): Promise<void> {
   await db.circle_members.delete(id);
   await enqueue("circle_members", "delete", id, {});
+}
+
+/* ------------------------------------------------------------------ */
+/* Friends                                                             */
+/* ------------------------------------------------------------------ */
+
+export async function addFriend(userId: string, friendId: string): Promise<void> {
+  if (userId === friendId) throw new Error("You cannot add yourself.");
+  const existing = await db.friends
+    .where("user_id")
+    .equals(userId)
+    .filter((f) => f.friend_id === friendId)
+    .first();
+  if (existing) throw new Error("They are already in your friends list.");
+  const row: Friend = {
+    id: newId(),
+    user_id: userId,
+    friend_id: friendId,
+    created_at: nowIso(),
+  };
+  await db.friends.put(row);
+  await enqueue("friends", "insert", row.id, row as unknown as Record<string, unknown>);
+}
+
+export async function removeFriend(id: string): Promise<void> {
+  await db.friends.delete(id);
+  await enqueue("friends", "delete", id, {});
 }
 
 /* ------------------------------------------------------------------ */

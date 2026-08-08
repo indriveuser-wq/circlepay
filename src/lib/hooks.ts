@@ -77,6 +77,22 @@ export function useNotifications(userId: string) {
   );
 }
 
+export function useFriends(userId: string) {
+  const rows = useLiveQuery(() => db.friends.toArray(), [], []) ?? [];
+  return useMemo(() => {
+    const added = rows.filter((r) => r.user_id === userId);
+    const addedMe = rows.filter((r) => r.friend_id === userId);
+    const addedIds = new Set(added.map((r) => r.friend_id));
+    return {
+      rows,
+      added,
+      addedMe,
+      mutual: addedMe.filter((r) => addedIds.has(r.user_id)),
+      isFriend: (id: string) => addedIds.has(id),
+    };
+  }, [rows, userId]);
+}
+
 export function useActivity() {
   return useLiveQuery(() => db.activity_events.toArray(), [], []) ?? [];
 }

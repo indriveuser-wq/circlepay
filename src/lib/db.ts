@@ -157,7 +157,15 @@ export interface ActivityEvent {
   created_at: string;
 }
 
+export interface Friend {
+  id: string;
+  user_id: string;
+  friend_id: string;
+  created_at: string;
+}
+
 export type OutboxTable =
+  | "friends"
   | "profiles"
   | "payment_methods"
   | "circles"
@@ -208,6 +216,7 @@ class SettleDB extends Dexie {
   settlements!: Table<Settlement, string>;
   notifications!: Table<AppNotification, string>;
   activity_events!: Table<ActivityEvent, string>;
+  friends!: Table<Friend, string>;
   outbox!: Table<OutboxEntry, number>;
   files!: Table<CachedFile, string>;
   meta!: Table<MetaRow, string>;
@@ -229,6 +238,10 @@ class SettleDB extends Dexie {
       outbox: "++seq, id, table, rowId",
       files: "path",
       meta: "key",
+    });
+
+    this.version(2).stores({
+      friends: "id, user_id, friend_id",
     });
   }
 }
@@ -272,6 +285,7 @@ export async function clearLocalData(): Promise<void> {
     db.settlements.clear(),
     db.notifications.clear(),
     db.activity_events.clear(),
+    db.friends.clear(),
     db.outbox.clear(),
     db.files.clear(),
     db.meta.clear(),
