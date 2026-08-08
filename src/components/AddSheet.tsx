@@ -425,7 +425,7 @@ function LoanForm({ direction, onDone }: { direction: "lend" | "borrow"; onDone:
         amountMinor,
         currency: "NPR",
         ...(purpose.trim() ? { purpose: purpose.trim() } : {}),
-        dueOn: dueOn || null,
+        dueOn: hasDue && dueOn ? dueOn : null,
       });
       toast.success(direction === "lend" ? "Loan recorded" : "Borrowing recorded");
       onDone();
