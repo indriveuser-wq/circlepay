@@ -169,6 +169,7 @@ function CircleDetail() {
                     <Link
                       to="/settle/$personId"
                       params={{ personId: edge.creditor }}
+                      search={{ circleId }}
                       className="shrink-0 rounded-lg bg-primary px-2.5 py-1.5 text-xs font-semibold text-primary-foreground"
                     >
                       Settle
