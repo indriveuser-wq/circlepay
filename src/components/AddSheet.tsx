@@ -62,8 +62,8 @@ export function AddSheet({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[92dvh] max-w-lg overflow-y-auto rounded-t-3xl p-0 sm:rounded-3xl">
-        <div className="sticky top-0 z-10 border-b border-border bg-card px-5 pb-3 pt-5">
+      <DialogContent className="max-h-[92dvh] w-[calc(100%-1.5rem)] max-w-lg overflow-y-auto rounded-3xl p-0 sm:rounded-3xl">
+        <div className="sticky top-0 z-10 border-b border-border bg-card px-4 pb-3 pt-5 sm:px-5">
           <DialogHeader className="space-y-1 text-left">
             <DialogTitle className="font-display text-xl">Add a record</DialogTitle>
             <DialogDescription className="text-xs">
