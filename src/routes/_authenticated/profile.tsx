@@ -17,6 +17,8 @@ import {
 } from "@/lib/mutations";
 import { isOnline } from "@/lib/sync";
 import { uploadImage } from "@/lib/upload";
+import { changeUsername, normalizeUsername, validateUsername } from "@/lib/username";
+
 
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
