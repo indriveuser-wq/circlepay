@@ -26,7 +26,7 @@ import {
   useProfiles,
 } from "@/lib/hooks";
 import { addCircleMember } from "@/lib/mutations";
-import { simplifyDebts } from "@/lib/ledger";
+import { mySettlementEdges } from "@/lib/ledger";
 import { formatMinor } from "@/lib/money";
 
 export const Route = createFileRoute("/_authenticated/circles/$circleId")({
