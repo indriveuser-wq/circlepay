@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-
+import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,13 +44,12 @@ function AuthPage() {
   const { next } = useSearch({ from: "/auth" });
   const target = safePath(next);
 
-  const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
-  const [resetSent, setResetSent] = useState(false);
 
   useEffect(() => {
     if (!loading && session) void navigate({ to: target, replace: true });
@@ -60,14 +59,7 @@ function AuthPage() {
     event.preventDefault();
     setBusy(true);
     try {
-      if (mode === "reset") {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/reset-password`,
-        });
-        if (error) throw error;
-        setResetSent(true);
-        toast.success("Reset link sent", { description: "Check your inbox for the link." });
-      } else if (mode === "signup") {
+      if (mode === "signup") {
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -89,18 +81,15 @@ function AuthPage() {
     }
   }
 
-
   async function google() {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}${target}`,
-        queryParams: { prompt: "select_account" },
-      },
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
     });
-    if (error) {
-      toast.error(error.message || "Google sign-in failed. Try email instead.");
+    if (result.error) {
+      toast.error("Google sign-in failed. Try email instead.");
+      return;
     }
+    if (result.redirected) return;
   }
 
   return (
@@ -114,43 +103,34 @@ function AuthPage() {
 
       <div className="mx-auto w-full max-w-sm">
         <h1 className="font-display text-3xl font-extrabold">
-          {mode === "reset"
-            ? "Reset your password"
-            : mode === "signin"
-              ? "Welcome back"
-              : "Create your account"}
+          {mode === "signin" ? "Welcome back" : "Create your account"}
         </h1>
         <p className="mt-1.5 text-sm text-muted-foreground">
-          {mode === "reset"
-            ? "We'll email you a link to set a new password."
-            : mode === "signin"
-              ? "Pick up your circles, loans and pending confirmations."
-              : "Start tracking who owes whom in under a minute."}
+          {mode === "signin"
+            ? "Pick up your circles, loans and pending confirmations."
+            : "Start tracking who owes whom in under a minute."}
         </p>
 
-        {mode === "reset" ? null : (
-          <div className="mt-6 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
-            {(
-              [
-                ["signin", "Sign in"],
-                ["signup", "Sign up"],
-              ] as const
-            ).map(([value, label]) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setMode(value)}
-                className={cn(
-                  "tap rounded-lg text-sm font-semibold transition-colors",
-                  mode === value ? "bg-card shadow-card" : "text-muted-foreground",
-                )}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        )}
-
+        <div className="mt-6 grid grid-cols-2 gap-1 rounded-xl bg-muted p-1">
+          {(
+            [
+              ["signin", "Sign in"],
+              ["signup", "Sign up"],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setMode(value)}
+              className={cn(
+                "tap rounded-lg text-sm font-semibold transition-colors",
+                mode === value ? "bg-card shadow-card" : "text-muted-foreground",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
         <form onSubmit={submit} className="mt-5 space-y-3.5">
           {mode === "signup" ? (
@@ -191,57 +171,22 @@ function AuthPage() {
               autoComplete="email"
             />
           </div>
-          {mode === "reset" ? null : (
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
-                autoComplete={mode === "signin" ? "current-password" : "new-password"}
-              />
-            </div>
-          )}
+          <div className="space-y-1.5">
+            <Label htmlFor="password">Password</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={8}
+              autoComplete={mode === "signin" ? "current-password" : "new-password"}
+            />
+          </div>
           <Button type="submit" disabled={busy} className="tap w-full rounded-xl">
-            {busy
-              ? "Please wait…"
-              : mode === "reset"
-                ? "Send reset link"
-                : mode === "signin"
-                  ? "Sign in"
-                  : "Create account"}
+            {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
           </Button>
-          {mode === "reset" && resetSent ? (
-            <p className="text-center text-xs text-muted-foreground">
-              If an account exists for {email}, the reset link is on its way.
-            </p>
-          ) : null}
-          {mode === "signin" ? (
-            <button
-              type="button"
-              onClick={() => {
-                setMode("reset");
-                setResetSent(false);
-              }}
-              className="w-full text-center text-xs font-semibold text-muted-foreground underline-offset-4 hover:underline"
-            >
-              Forgot password?
-            </button>
-          ) : null}
-          {mode === "reset" ? (
-            <button
-              type="button"
-              onClick={() => setMode("signin")}
-              className="w-full text-center text-xs font-semibold text-muted-foreground underline-offset-4 hover:underline"
-            >
-              Back to sign in
-            </button>
-          ) : null}
         </form>
-
 
         <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
           <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
