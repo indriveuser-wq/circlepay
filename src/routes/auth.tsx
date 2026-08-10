@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, useSearch, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Wallet } from "lucide-react";
+import { Loader2, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth";
@@ -50,9 +50,13 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    if (!loading && session) void navigate({ to: target, replace: true });
+    if (!loading && session) {
+      setRedirecting(true);
+      void navigate({ to: target, replace: true });
+    }
   }, [loading, session, target, navigate]);
 
   async function submit(event: React.FormEvent) {
@@ -73,6 +77,9 @@ function AuthPage() {
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        // Keep the button busy — the auth listener redirects in a moment.
+        setRedirecting(true);
+        return;
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Something went wrong.");
@@ -82,14 +89,30 @@ function AuthPage() {
   }
 
   async function google() {
+    setRedirecting(true);
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
     if (result.error) {
+      setRedirecting(false);
       toast.error("Google sign-in failed. Try email instead.");
       return;
     }
     if (result.redirected) return;
+  }
+
+  if (redirecting || (!loading && session)) {
+    return (
+      <div className="grid min-h-dvh place-items-center bg-surface px-6" aria-live="polite">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <span className="grid h-12 w-12 place-items-center rounded-2xl bg-primary text-primary-foreground">
+            <Loader2 className="h-6 w-6 animate-spin" aria-hidden="true" />
+          </span>
+          <p className="font-display text-lg font-bold">Signing you in…</p>
+          <p className="text-sm text-muted-foreground">Just a moment while we load your circles.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -184,7 +207,7 @@ function AuthPage() {
             />
           </div>
           <Button type="submit" disabled={busy} className="tap w-full rounded-xl">
-            {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+            {busy ? "Signing in…" : mode === "signin" ? "Sign in" : "Create account"}
           </Button>
         </form>
 
