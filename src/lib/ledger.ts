@@ -52,6 +52,7 @@ export function buildDebtGraph(input: LedgerInput, circleId?: string): Map<strin
       paidByLoan.set(r.loan_id, (paidByLoan.get(r.loan_id) ?? 0) + r.amount_minor);
     }
     for (const loan of input.loans) {
+      if (loan.status === "pending_confirmation" || loan.status === "rejected" || loan.status === "cancelled") continue;
       const outstanding = loan.amount_minor - (paidByLoan.get(loan.id) ?? 0);
       if (outstanding > 0) add(loan.borrower_id, loan.lender_id, outstanding);
     }

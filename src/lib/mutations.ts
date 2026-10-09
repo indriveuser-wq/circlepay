@@ -360,7 +360,7 @@ export async function createLoan(input: {
     purpose: input.purpose ?? null,
     lent_on: input.lentOn ?? today(),
     due_on: input.dueOn ?? null,
-    status: "active",
+    status: "pending_confirmation",
     created_by: input.createdBy,
     created_at: nowIso(),
     updated_at: nowIso(),
@@ -474,6 +474,25 @@ export async function createSettlement(input: {
     entityId: row.id,
   });
   return row.id;
+}
+
+export async function respondToLoan(loan: Loan, byUserId: string, accept: boolean): Promise<void> {
+  if (loan.status !== "pending_confirmation") throw new Error("This loan was already answered.");
+  if (byUserId === loan.created_by || (byUserId !== loan.lender_id && byUserId !== loan.borrower_id)) {
+    throw new Error("Only the other person can confirm this loan.");
+  }
+  const status = accept ? "active" : "rejected";
+  await db.loans.update(loan.id, { status, updated_at: nowIso() });
+  await enqueue("loans", "update", loan.id, { status });
+  await notify({
+    userId: loan.created_by,
+    actorId: byUserId,
+    kind: accept ? "loan_accepted" : "loan_rejected",
+    title: accept ? "Your loan was confirmed" : "Your loan was declined",
+    body: accept ? "It now counts toward your balance." : "It won't affect any balance.",
+    entityType: "loan",
+    entityId: loan.id,
+  });
 }
 
 export async function confirmSettlement(settlement: Settlement, byUserId: string): Promise<void> {
