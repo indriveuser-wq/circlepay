@@ -79,7 +79,7 @@ export interface ExpenseParticipant {
   created_at: string;
 }
 
-export type LoanStatus = "active" | "partial" | "payment_pending" | "settled" | "overdue";
+export type LoanStatus = "pending_confirmation" | "active" | "partial" | "payment_pending" | "settled" | "overdue" | "rejected" | "cancelled" | "paid";
 
 export interface Loan {
   id: string;
