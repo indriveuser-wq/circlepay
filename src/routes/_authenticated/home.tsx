@@ -8,6 +8,7 @@ import { displayName, useActivity, useLedger, useProfile, useProfileMap } from "
 import { formatMinor } from "@/lib/money";
 
 export const Route = createFileRoute("/_authenticated/home")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Your balances — Settle" },

@@ -6,6 +6,7 @@ import { displayName, useActivity, useProfileMap } from "@/lib/hooks";
 import { formatMinor } from "@/lib/money";
 
 export const Route = createFileRoute("/_authenticated/activity")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Activity — Settle" },

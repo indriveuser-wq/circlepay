@@ -8,6 +8,7 @@ import { useNotifications } from "@/lib/hooks";
 import { markAllNotificationsRead, markNotificationRead } from "@/lib/mutations";
 
 export const Route = createFileRoute("/_authenticated/notifications")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Notifications — Settle" },
