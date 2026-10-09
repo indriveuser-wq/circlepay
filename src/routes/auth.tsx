@@ -27,7 +27,7 @@ export const Route = createFileRoute("/auth")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>): { next?: string } => ({
+  validateSearch: (search: Record<string, unknown>): { next?: string | undefined } => ({
     next: typeof search["next"] === "string" ? (search["next"] as string) : undefined,
   }),
   component: AuthPage,
