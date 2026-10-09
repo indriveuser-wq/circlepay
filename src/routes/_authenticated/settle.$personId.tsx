@@ -35,7 +35,7 @@ export const Route = createFileRoute("/_authenticated/settle/$personId")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { loanId?: string; circleId?: string } => ({
     loanId: typeof search["loanId"] === "string" ? (search["loanId"] as string) : undefined,
     circleId: typeof search["circleId"] === "string" ? (search["circleId"] as string) : undefined,
   }),
