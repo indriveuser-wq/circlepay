@@ -26,6 +26,7 @@ import { today } from "@/lib/db";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/settle/$personId")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Settle up — Settle" },

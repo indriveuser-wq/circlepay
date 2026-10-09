@@ -21,6 +21,7 @@ import { changeUsername, normalizeUsername, validateUsername } from "@/lib/usern
 
 
 export const Route = createFileRoute("/_authenticated/profile")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Your profile & payment QRs — Settle" },

@@ -13,6 +13,7 @@ import { addFriend, removeFriend } from "@/lib/mutations";
 import { findProfileByUsername, normalizeUsername, validateUsername } from "@/lib/username";
 
 export const Route = createFileRoute("/_authenticated/people/")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Friends — Settle" },

@@ -37,6 +37,7 @@ import { memberNetBalances, settlementPlanFor } from "@/lib/ledger";
 import { formatMinor } from "@/lib/money";
 
 export const Route = createFileRoute("/_authenticated/circles/$circleId")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Circle — Settle" },

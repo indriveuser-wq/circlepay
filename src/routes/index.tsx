@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "Settle — Shared expenses, loans & settlement confirmations" },

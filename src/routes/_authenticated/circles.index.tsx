@@ -20,6 +20,7 @@ import { createCircle } from "@/lib/mutations";
 import { formatMinor } from "@/lib/money";
 
 export const Route = createFileRoute("/_authenticated/circles/")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Your circles — Settle" },

@@ -28,6 +28,7 @@ import { formatMinor, toMinor } from "@/lib/money";
 import { today, type Loan } from "@/lib/db";
 
 export const Route = createFileRoute("/_authenticated/people/$personId")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Person — Settle" },
